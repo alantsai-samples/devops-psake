@@ -11,9 +11,7 @@
 	$buildArtifactDirectory = "$buildDirectory\artifact"
 }
 
-task default -depends Test
-
-task Init -depends Clean -description "初始化建制所需要的設定"{
+function InitDirectory{
 	Write-Host "建立建制結果的資料夾 $buildDirectory"
 	New-Item $buildDirectory -ItemType Directory | Out-Null
 
@@ -28,6 +26,12 @@ task Init -depends Clean -description "初始化建制所需要的設定"{
 
 	Write-Host "建立建制結果裡面的Artifact資料夾 $buildArtifactDirectory"
 	New-Item $buildArtifactDirectory -ItemType Directory | Out-Null
+}
+
+task default -depends Test
+
+task Init -depends Clean -description "初始化建制所需要的設定"{
+	InitDirectory
 }
 
 task Test -depends Compile, Clean -description "執行Test" { 
