@@ -16,6 +16,10 @@ if(Test-Path $psakeModulePath){
 
 # 執行psake
 Invoke-psake -buildFile .\default.ps1 -taskList Test `
+			 -parameters @{
+				"solutionFile" = (Get-ChildItem("..\*.sln")).FullName |
+					Sort-Object $_ | select -Last 1
+			 }`
 			 -properties @{
 				"testMsg"="測試訊息"
 			 }
