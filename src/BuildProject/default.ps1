@@ -13,6 +13,8 @@
 	$buildTarget = "Any CPU"
 }
 
+FormatTaskName ("`r`n`r`n" + ("-"*25) + "[{0}]" + ("-"*25))
+
 function InitDirectory{
 	Write-Host "建立建制結果的資料夾 $buildDirectory"
 	New-Item $buildDirectory -ItemType Directory | Out-Null
