@@ -1,6 +1,5 @@
 ﻿Properties{
 	$testMsg = "Executed Test !"
-	$compileMsg = "Executed Compile !"
 	$cleanMsg = "Executed Clean !"
 
 	$solutionDirectory = (Get-Item $solutionFile).DirectoryName
@@ -9,7 +8,12 @@
 	$buildTestResultDirectory = "$buildDirectory\testResult"
 	$buildTestCoverageDirectory = "$buildDirectory\testCoverage"
 	$buildArtifactDirectory = "$buildDirectory\artifact"
+
+	$buildConfiguration = "Release"
+	$buildTarget = "Any CPU"
 }
+
+FormatTaskName ("`r`n`r`n" + ("-"*25) + "[{0}]" + ("-"*25))
 
 function InitDirectory{
 	Write-Host "建立建制結果的資料夾 $buildDirectory"
@@ -38,8 +42,12 @@ task Test -depends Compile, Clean -description "執行Test" {
 	Write-Host $testMsg
 }
 
-task Compile -depends Clean, Init -description "編譯程式碼" { 
-	Write-Host $compileMsg
+task Compile -depends Clean, Init -description "編譯程式碼" `
+			 -requiredVariables solutionFile, buildConfiguration, buildTarget, buildTempDirectory `
+{ 
+	Write-Host "開始建制檔案：$solutionFile"
+
+	msbuild $solutionFile "/p:Configuration=$buildConfiguration;Platform=$buildTarget;OutDir=$buildTempDirectory"
 }
 
 task Clean -description "刪除上次編譯遺留下來的內容"{ 
