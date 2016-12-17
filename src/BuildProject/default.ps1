@@ -47,7 +47,13 @@ task Compile -depends Clean, Init -description "編譯程式碼" `
 { 
 	Write-Host "開始建制檔案：$solutionFile"
 
-	msbuild $solutionFile "/p:Configuration=$buildConfiguration;Platform=$buildTarget;OutDir=$buildTempDirectory"
+	$buildParam = "Configuration=$buildConfiguration" +
+					";Platform=$buildTarget" + 
+					";OutDir=$buildTempDirectory"
+	
+	$buildParam = $buildParam + ";GenerateProjectSpecificOutputFolder=true"
+
+	msbuild $solutionFile "/p:$buildParam"
 }
 
 task Clean -description "刪除上次編譯遺留下來的內容"{ 
