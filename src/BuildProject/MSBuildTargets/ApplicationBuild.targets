@@ -1,0 +1,87 @@
+﻿<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+		<ApplicationOutputDirectory>$(OutDir)_PublishedApplication\$(MSBuildProjectName)</ApplicationOutputDirectory>
+	</PropertyGroup>
+
+	<PropertyGroup>
+		<PrepareForRunDependsOn>
+			$(PrepareForRunDependsOn);
+			_CopyApplication
+		</PrepareForRunDependsOn>
+	</PropertyGroup>
+
+	<Target Name="_CopyApplication" Condition="'$(OutDir)' != '$(OutputPath)'" >
+    <!-- Log tasks -->
+    <Message Text="Copying Web Application Project Files for $(MSBuildProjectName)" />
+
+    <!-- Create the _PublishedWebsites\app\bin folder -->
+    <MakeDir Directories="$(ApplicationOutputDirectory)\bin" />
+
+    <!-- Copy build outputs to _PublishedWebsites\app\bin folder -->
+    <Copy SourceFiles="@(IntermediateAssembly)" DestinationFolder="$(ApplicationOutputDirectory)\bin" 
+          SkipUnchangedFiles="true"
+          Retries="$(CopyRetryCount)"
+          RetryDelayMilliseconds="$(CopyRetryDelayMilliseconds)"/>
+    <Copy SourceFiles="@(AddModules)" 
+          DestinationFolder="$(ApplicationOutputDirectory)\bin" 
+          SkipUnchangedFiles="true"
+          Retries="$(CopyRetryCount)"
+          RetryDelayMilliseconds="$(CopyRetryDelayMilliseconds)"/>
+    <Copy SourceFiles="$(IntermediateOutputPath)$(_SGenDllName)" 
+          DestinationFolder="$(ApplicationOutputDirectory)\%(Content.SubFolder)%(Content.RecursiveDir)" 
+          SkipUnchangedFiles="true" 
+          Condition="'$(_SGenDllCreated)'=='true'"
+          Retries="$(CopyRetryCount)"
+          RetryDelayMilliseconds="$(CopyRetryDelayMilliseconds)"/>
+    <Copy SourceFiles="$(IntermediateOutputPath)$(TargetName).pdb" 
+          DestinationFolder="$(ApplicationOutputDirectory)\bin" 
+          SkipUnchangedFiles="true" 
+          Condition="'$(_DebugSymbolsProduced)'=='true'" 
+          Retries="$(CopyRetryCount)"
+          RetryDelayMilliseconds="$(CopyRetryDelayMilliseconds)"/>
+    <Copy SourceFiles="@(DocFileItem)" 
+          DestinationFolder="$(ApplicationOutputDirectory)\bin" 
+          SkipUnchangedFiles="true" 
+          Condition="'$(_DocumentationFileProduced)'=='true'"
+          Retries="$(CopyRetryCount)"
+          RetryDelayMilliseconds="$(CopyRetryDelayMilliseconds)"/>
+    <Copy SourceFiles="@(IntermediateSatelliteAssembliesWithTargetPath)" 
+          DestinationFiles="@(IntermediateSatelliteAssembliesWithTargetPath->'$(ApplicationOutputDirectory)\bin\%(Culture)\$(TargetName).resources.dll')" 
+          SkipUnchangedFiles="true" 
+          Retries="$(CopyRetryCount)"
+          RetryDelayMilliseconds="$(CopyRetryDelayMilliseconds)"/>
+    <Copy SourceFiles="@(ReferenceComWrappersToCopyLocal); @(ResolvedIsolatedComModules); @(_DeploymentLooseManifestFile); @(NativeReferenceFile)" 
+          DestinationFolder="$(ApplicationOutputDirectory)\bin" 
+          SkipUnchangedFiles="true" 
+          Retries="$(CopyRetryCount)"
+          RetryDelayMilliseconds="$(CopyRetryDelayMilliseconds)"/>
+
+    <!-- copy any referenced assemblies to _PublishedWebsites\app\bin folder -->
+    <Copy SourceFiles="@(ReferenceCopyLocalPaths)"
+          DestinationFiles="@(ReferenceCopyLocalPaths->'$(ApplicationOutputDirectory)\bin\%(DestinationSubDirectory)%(Filename)%(Extension)')" 
+          SkipUnchangedFiles="true" 
+          Retries="$(CopyRetryCount)"
+          RetryDelayMilliseconds="$(CopyRetryDelayMilliseconds)"/>
+
+    <!-- Copy items that have been marked to be copied to the bin folder -->
+    <Copy SourceFiles="@(_SourceItemsToCopyToOutputDirectory)" 
+          DestinationFolder="$(ApplicationOutputDirectory)\bin" 
+          SkipUnchangedFiles="true" 
+          Retries="$(CopyRetryCount)"
+          RetryDelayMilliseconds="$(CopyRetryDelayMilliseconds)"/>
+    <Copy SourceFiles="@(_SourceItemsToCopyToOutputDirectoryAlways)" 
+          DestinationFolder="$(ApplicationOutputDirectory)\bin" 
+          SkipUnchangedFiles="false" 
+          Retries="$(CopyRetryCount)"
+          RetryDelayMilliseconds="$(CopyRetryDelayMilliseconds)"/>
+
+
+    <!-- Copy items that need to be bin deployed to the bin folder -->
+    <Copy SourceFiles="@(_binDeployableAssemblies)" 
+          DestinationFolder="$(ApplicationOutputDirectory)\bin\%(RecursiveDir)" 
+          SkipUnchangedFiles="true" 
+          Retries="$(CopyRetryCount)"
+          RetryDelayMilliseconds="$(CopyRetryDelayMilliseconds)"/>
+
+  </Target>
+</Project>

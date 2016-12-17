@@ -51,7 +51,7 @@ task Compile -depends Clean, Init -description "編譯程式碼" `
 					";Platform=$buildTarget" + 
 					";OutDir=$buildTempDirectory"
 	
-	$buildParam = $buildParam + ";GenerateProjectSpecificOutputFolder=true"
+	# $buildParam = $buildParam + ";GenerateProjectSpecificOutputFolder=true"
 
 	msbuild $solutionFile "/p:$buildParam"
 }
