@@ -2,4 +2,12 @@
   <PropertyGroup>
 		<ApplicationOutputDirectory>$(OutDir)_PublishedApplication\$(MSBuildProjectName)</ApplicationOutputDirectory>
 	</PropertyGroup>
+
+	<PropertyGroup>
+		<PrepareForRunDependsOn>
+			$(PrepareForRunDependsOn);
+			_CopyApplication
+		</PrepareForRunDependsOn>
+	</PropertyGroup>
+
 </Project>
