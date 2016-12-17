@@ -56,4 +56,5 @@
   <Target Name="AfterBuild">
   </Target>
   -->
+  <Import Project="..\BuildProject\MSBuildTargets\ApplicationBuild.targets"/>
 </Project>
