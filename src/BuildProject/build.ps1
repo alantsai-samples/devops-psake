@@ -24,3 +24,8 @@ Invoke-psake -buildFile .\default.ps1 -taskList Test `
 			 -properties @{
 				"testMsg"="測試訊息"
 			 }
+
+Write-Host "建制的Exit Code：$LastExitCode"
+
+# 把錯誤碼往上傳
+exit $LastExitCode
