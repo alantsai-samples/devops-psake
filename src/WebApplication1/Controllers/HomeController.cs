@@ -8,7 +8,7 @@ namespace WebApplication1.Controllers
 {
     public class HomeController : Controller
     {
-        public ActionResul Index()
+        public ActionResult Index()
         {
             return View();
         }
