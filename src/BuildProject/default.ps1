@@ -9,6 +9,10 @@
 	$buildTestCoverageDirectory = "$buildDirectory\testCoverage"
 	$buildArtifactDirectory = "$buildDirectory\artifact"
 
+	$xunitTestResultDirectory = "$buildTestResultDirectory\Xunit"
+	$xunitExe = ((Get-ChildItem("$solutionDirectory\packages\xunit.runner.console*")).FullName |
+					Sort-Object $_ | select -Last 1) + "\tools\xunit.console.exe"
+
 	$buildConfiguration = "Release"
 	$buildTarget = "Any CPU"
 }
@@ -36,6 +40,9 @@ task default -depends Test
 
 task Init -depends Clean -description "初始化建制所需要的設定"{
 	InitDirectory
+
+	# 檢查test framework runner
+	Assert (Test-Path $xunitExe) "xunit console runner 找不到"
 }
 
 task XunitTest -depends Compile -description "執行Xunit測試"{
