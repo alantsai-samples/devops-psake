@@ -38,6 +38,14 @@ task Init -depends Clean -description "初始化建制所需要的設定"{
 	InitDirectory
 }
 
+task XunitTest -depends Compile -description "執行Xunit測試"{
+	Write-Host "準備執行Xunit測試"
+
+
+
+	Write-Host "完成執行Xunit測試"
+}
+
 task Test -depends Compile, Clean -description "執行Test" { 
 	Write-Host $testMsg
 }
