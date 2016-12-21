@@ -45,15 +45,26 @@ task Init -depends Clean -description "初始化建制所需要的設定"{
 	Assert (Test-Path $xunitExe) "xunit console runner 找不到"
 }
 
-task XunitTest -depends Compile -description "執行Xunit測試"{
-	Write-Host "準備執行Xunit測試"
+task XunitTest -depends Compile -description "執行Xunit測試" `
+{
+	# 取得Xunit project的路徑
+	if($xunitTestPath -eq ""){
+		$xunitTestPath =  Get-ChildItem $buildTempDirectory -Recurse -Filter xunit*.dll | 
+							Select -ExpandProperty DirectoryName -Unique
+	}
 
+	if(Test-Path $xunitTestPath){
 
+		Write-Host "準備執行Xunit測試"
 
-	Write-Host "完成執行Xunit測試"
+		Write-Host $xunitTestPath
+
+		Write-Host "完成執行Xunit測試"
+	}
+
 }
 
-task Test -depends Compile, Clean -description "執行Test" { 
+task Test -depends Compile, Clean, XunitTest -description "執行Test" { 
 	Write-Host $testMsg
 }
 
