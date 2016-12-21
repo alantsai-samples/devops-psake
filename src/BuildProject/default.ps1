@@ -48,17 +48,32 @@ task Init -depends Clean -description "初始化建制所需要的設定"{
 task XunitTest -depends Compile -description "執行Xunit測試" `
 {
 	# 取得Xunit project的路徑
-	if($xunitTestPath -eq ""){
-		$xunitTestPath =  Get-ChildItem $buildTempDirectory -Recurse -Filter xunit*.dll | 
-							Select -ExpandProperty DirectoryName -Unique
-	}
+	$xunitTestPath =  Get-ChildItem $buildTempDirectory -Recurse -Filter xunit*.dll | 
+						Select -ExpandProperty DirectoryName -Unique | % { [io.directoryinfo]$_ }
 
 	if(Test-Path $xunitTestPath){
 
+		Write-Host "建立Xunit測試結果的資料夾 $xunitTestResultDirectory"
+		New-Item $xunitTestResultDirectory -ItemType Directory | Out-Null
+
+		Write-Host "總共有 $($xunitTestPath.Count) 個專案"
+
+		Write-Host ($xunitTestPath | Select $_.Name)
+
 		Write-Host "準備執行Xunit測試"
 
-		Write-Host $xunitTestPath
+		# 組執行的dll
 
+		$testDlls = $xunitTestPath | % {$_.FullName + "\" + $_.Name + ".dll" }
+
+		$testDllsJoin = [string]::Join(" ", $testDlls)
+
+		Write-Host "執行的 Dll: $testDllsJoin"
+
+		exec{ &$xunitExe $testDllsJoin -xml $xunitTestResultDirectory\xUnit.xml `
+				-html $xunitTestResultDirectory\xUnit.html `
+				-nologo -noshadow}
+		
 		Write-Host "完成執行Xunit測試"
 	}
 
