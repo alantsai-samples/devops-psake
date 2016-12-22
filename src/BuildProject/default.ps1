@@ -9,6 +9,10 @@
 	$buildTestCoverageDirectory = "$buildDirectory\testCoverage"
 	$buildArtifactDirectory = "$buildDirectory\artifact"
 
+	$xunitTestResultDirectory = "$buildTestResultDirectory\Xunit"
+	$xunitExe = ((Get-ChildItem("$solutionDirectory\packages\xunit.runner.console*")).FullName |
+					Sort-Object $_ | select -Last 1) + "\tools\xunit.console.exe"
+
 	$buildConfiguration = "Release"
 	$buildTarget = "Any CPU"
 }
@@ -36,9 +40,46 @@ task default -depends Test
 
 task Init -depends Clean -description "初始化建制所需要的設定"{
 	InitDirectory
+
+	# 檢查test framework runner
+	Assert (Test-Path $xunitExe) "xunit console runner 找不到"
 }
 
-task Test -depends Compile, Clean -description "執行Test" { 
+task XunitTest -depends Compile -description "執行Xunit測試" `
+{
+	# 取得Xunit project的路徑
+	$xunitTestPath =  Get-ChildItem $buildTempDirectory -Recurse -Filter xunit*.dll | 
+						Select -ExpandProperty DirectoryName -Unique | % { [io.directoryinfo]$_ }
+
+	if(Test-Path $xunitTestPath){
+
+		Write-Host "建立Xunit測試結果的資料夾 $xunitTestResultDirectory"
+		New-Item $xunitTestResultDirectory -ItemType Directory | Out-Null
+
+		Write-Host "總共有 $($xunitTestPath.Count) 個專案"
+
+		Write-Host ($xunitTestPath | Select $_.Name)
+
+		Write-Host "準備執行Xunit測試"
+
+		# 組執行的dll
+
+		$testDlls = $xunitTestPath | % {$_.FullName + "\" + $_.Name + ".dll" }
+
+		$testDllsJoin = [string]::Join(" ", $testDlls)
+
+		Write-Host "執行的 Dll: $testDllsJoin"
+
+		exec{ &$xunitExe $testDllsJoin -xml $xunitTestResultDirectory\xUnit.xml `
+				-html $xunitTestResultDirectory\xUnit.html `
+				-nologo -noshadow}
+		
+		Write-Host "完成執行Xunit測試"
+	}
+
+}
+
+task Test -depends Compile, Clean, XunitTest -description "執行Test" { 
 	Write-Host $testMsg
 }
 
