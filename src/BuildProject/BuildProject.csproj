@@ -69,6 +69,7 @@
   <ItemGroup>
     <None Include="build.ps1" />
     <None Include="default.ps1" />
+    <None Include="helper.ps1" />
     <None Include="MSBuildTargets\ApplicationBuild.targets" />
     <None Include="packages.config" />
   </ItemGroup>
