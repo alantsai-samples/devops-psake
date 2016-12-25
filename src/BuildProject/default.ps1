@@ -62,96 +62,45 @@ task Init -depends Clean -description "初始化建制所需要的設定"{
 task XunitTest -depends Compile -description "執行Xunit測試" `
 {
 	# 取得Xunit project的路徑
-	$xunitTestPath = Get-DirectoryInfoContainFile "xunit*.dll"
+	$testAssembly = Get-TestAssemblyPath "xunit*.dll" $xunitTestResultDirectory
 
-	if(Test-Path $xunitTestPath){
+	if(Test-Path $testAssembly){
 
-		Write-Host "建立Xunit測試結果的資料夾 $xunitTestResultDirectory"
-		New-Item $xunitTestResultDirectory -ItemType Directory | Out-Null
-
-		Write-Host "總共有 $($xunitTestPath.Count) 個專案"
-
-		Write-Host ($xunitTestPath | Select $_.Name)
-
-		Write-Host "準備執行Xunit測試"
-
-		# 組執行的dll
-
-		$testDlls = $xunitTestPath | % {$_.FullName + "\" + $_.Name + ".dll" }
-
-		$testDllsJoin = [string]::Join(" ", $testDlls)
-
-		Write-Host "執行的 Dll: $testDllsJoin"
-
-		exec{ &$xunitExe $testDllsJoin -xml $xunitTestResultDirectory\xUnit.xml `
+		exec{ &$xunitExe $testAssembly -xml $xunitTestResultDirectory\xUnit.xml `
 				-html $xunitTestResultDirectory\xUnit.html `
 				-nologo -noshadow}
-		
-		Write-Host "完成執行Xunit測試"
 	}
-
 }
 
 task NunitTest -depends Compile -description "執行Nunit測試" `
 {
 	# 取得nunit project的路徑
-	$nunitTestPath = Get-DirectoryInfoContainFile "nunit*.dll"
+	$testAssembly = Get-TestAssemblyPath "nunit*.dll" $nunitTestResultDirectory
 
-	if(Test-Path $nunitTestPath){
-		Write-Host "建立Nunit測試結果的資料夾 $nunitTestResultDirectory"
-		New-Item $nunitTestResultDirectory -ItemType Directory | Out-Null
-
-		Write-Host "總共有 $($nunitTestPath.Count) 個專案"
-
-		Write-Host ($nunitTestPath | Select $_.Name)
-
-		Write-Host "準備執行Nunit測試"
+	if(Test-Path $testAssembly){
+		exec{ & $nunitExe $testAssembly --result=$nunitTestResultDirectory\nUnit.xml}
 	}
-
-	# 組執行的dll
-	$testDlls = $nunitTestPath | % {$_.FullName + "\" + $_.Name + ".dll" }
- 
-	$testDllsJoin = [string]::Join(" ", $testDlls)
-
-	Write-Host "執行的 Dll: $testDllsJoin"
-
-	exec{ & $nunitExe $testDllsJoin --result=$nunitTestResultDirectory\nUnit.xml}
 }
 
 task MSTest -depends Compile -description "執行MSTest測試" `
 {
 	# 取得nunit project的路徑
-	$msTestPath = Get-DirectoryInfoContainFile "Microsoft.VisualStudio.QualityTools.UnitTestFramework.dll"
+	$testAssembly = Get-TestAssemblyPath "Microsoft.VisualStudio.QualityTools.UnitTestFramework.dll" `
+						$msTestResultDirectory
 
-	if(Test-Path $msTestPath){
-		Write-Host "建立MS Test測試結果的資料夾 $msTestResultDirectory"
-		New-Item $msTestResultDirectory -ItemType Directory | Out-Null
+	if(Test-Path $testAssembly){
+		# MSTest 無法設定結果輸出位置，因此移動進去
+		Push-Location $msTestResultDirectory
+		exec {& $msTestExe $testAssembly /Logger:trx}
+		Pop-Location
 
-		Write-Host "總共有 $($msTestPath.Count) 個專案"
+		$msTestDefaultResultPath = "$msTestResultDirectory\TestResults"
+		$msTestResult = "$msTestResultDirectory\MsTest.trx"
 
-		Write-Host ($msTestPath | Select $_.Name)
-
-		Write-Host "準備執行MS Test測試"
+		Write-Host "把測試結果移動到 $msTestResult"
+		Move-Item -Path $msTestDefaultResultPath\*.trx -Destination $msTestResult
+		Remove-Item $msTestDefaultResultPath
 	}
-
-	# 組執行的dll
-	$testDlls = $msTestPath  | % {$_.FullName + "\" + $_.Name + ".dll" }
- 
-	$testDllsJoin = [string]::Join(" ", $testDlls)
-
-	Write-Host "執行的 Dll: $testDllsJoin"
-
-	# MSTest 無法設定結果輸出位置，因此移動進去
-	Push-Location $msTestResultDirectory
-	exec {& $msTestExe $testDllsJoin /Logger:trx}
-	Pop-Location
-
-	$msTestDefaultResultPath = "$msTestResultDirectory\TestResults"
-	$msTestResult = "$msTestResultDirectory\MsTest.trx"
-
-	Write-Host "把測試結果移動到 $msTestResult"
-	Move-Item -Path $msTestDefaultResultPath\*.trx -Destination $msTestResult
-	Remove-Item $msTestDefaultResultPath
 }
 
 
