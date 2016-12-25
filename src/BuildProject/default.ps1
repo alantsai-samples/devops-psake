@@ -11,12 +11,14 @@ Properties{
 	$buildTestCoverageDirectory = "$buildDirectory\testCoverage"
 	$buildArtifactDirectory = "$buildDirectory\artifact"
 
-	$xunitTestResultDirectory = "$buildTestResultDirectory\Xunit"
-	$xunitExe = ((Get-ChildItem("$solutionDirectory\packages\xunit.runner.console*")).FullName |
-					Sort-Object $_ | select -Last 1) + "\tools\xunit.console.exe"
+	$packageDirectoryPath = "$solutionDirectory\packages\"
 
-	$nunitExe = ((Get-ChildItem("$solutionDirectory\packages\NUnit.ConsoleRunner*")).FullName |
-                    Sort-Object $_ | select -Last 1) + "\tools\nunit3-console.exe"
+	$xunitTestResultDirectory = "$buildTestResultDirectory\Xunit"
+	$xunitExe = (Get-PackagePath $packageDirectoryPath "xunit.runner.console") + 
+					"\tools\xunit.console.exe"
+
+	$nunitExe = (Get-PackagePath $packageDirectoryPath "NUnit.ConsoleRunner") + 
+                   "\tools\nunit3-console.exe"
 
 	$nunitTestResultDirectory = "$buildTestResultDirectory\Nunit"
 
