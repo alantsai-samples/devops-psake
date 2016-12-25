@@ -119,13 +119,43 @@ task NunitTest -depends Compile -description "執行Nunit測試" `
 task MSTest -depends Compile -description "執行MSTest測試" `
 {
 	# 取得nunit project的路徑
-	$msTestPath =  Get-ChildItem $buildTempDirectory -Recurse -Filter Microsoft.VisualStudio.QualityTools.UnitTestFramework.resources.dll | 
+	$msTestPath =  Get-ChildItem $buildTempDirectory -Recurse -Filter Microsoft.VisualStudio.QualityTools.UnitTestFramework.dll | 
 						Select -ExpandProperty DirectoryName -Unique | 
 						% { [io.directoryinfo]$_ } 
+
+	if(Test-Path $msTestPath){
+		Write-Host "建立MS Test測試結果的資料夾 $msTestResultDirectory"
+		New-Item $msTestResultDirectory -ItemType Directory | Out-Null
+
+		Write-Host "總共有 $($msTestPath.Count) 個專案"
+
+		Write-Host ($msTestPath | Select $_.Name)
+
+		Write-Host "準備執行MS Test測試"
+	}
+
+	# 組執行的dll
+	$testDlls = $msTestPath  | % {$_.FullName + "\" + $_.Name + ".dll" }
+ 
+	$testDllsJoin = [string]::Join(" ", $testDlls)
+
+	Write-Host "執行的 Dll: $testDllsJoin"
+
+	# MSTest 無法設定結果輸出位置，因此移動進去
+	Push-Location $msTestResultDirectory
+	exec {& $msTestExe $testDllsJoin /Logger:trx}
+	Pop-Location
+
+	$msTestDefaultResultPath = "$msTestResultDirectory\TestResults"
+	$msTestResult = "$msTestResultDirectory\MsTest.trx"
+
+	Write-Host "把測試結果移動到 $msTestResult"
+	Move-Item -Path $msTestDefaultResultPath\*.trx -Destination $msTestResult
+	Remove-Item $msTestDefaultResultPath
 }
 
 
-task Test -depends Compile, Clean, XunitTest, NunitTest -description "執行Test" { 
+task Test -depends Compile, Clean, XunitTest, NunitTest, MSTest -description "執行Test" { 
 	Write-Host $testMsg
 }
 
