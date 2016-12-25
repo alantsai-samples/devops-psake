@@ -1,4 +1,6 @@
-﻿Properties{
+﻿. .\helper.ps1
+
+Properties{
 	$testMsg = "Executed Test !"
 	$cleanMsg = "Executed Clean !"
 
