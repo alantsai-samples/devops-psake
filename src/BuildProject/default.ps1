@@ -62,8 +62,7 @@ task Init -depends Clean -description "初始化建制所需要的設定"{
 task XunitTest -depends Compile -description "執行Xunit測試" `
 {
 	# 取得Xunit project的路徑
-	$xunitTestPath =  Get-ChildItem $buildTempDirectory -Recurse -Filter xunit*.dll | 
-						Select -ExpandProperty DirectoryName -Unique | % { [io.directoryinfo]$_ }
+	$xunitTestPath = Get-DirectoryInfoContainFile "xunit*.dll"
 
 	if(Test-Path $xunitTestPath){
 
@@ -96,8 +95,7 @@ task XunitTest -depends Compile -description "執行Xunit測試" `
 task NunitTest -depends Compile -description "執行Nunit測試" `
 {
 	# 取得nunit project的路徑
-	$nunitTestPath =  Get-ChildItem $buildTempDirectory -Recurse -Filter nunit*.dll | 
-						Select -ExpandProperty DirectoryName -Unique | % { [io.directoryinfo]$_ }
+	$nunitTestPath = Get-DirectoryInfoContainFile "nunit*.dll"
 
 	if(Test-Path $nunitTestPath){
 		Write-Host "建立Nunit測試結果的資料夾 $nunitTestResultDirectory"
@@ -123,9 +121,7 @@ task NunitTest -depends Compile -description "執行Nunit測試" `
 task MSTest -depends Compile -description "執行MSTest測試" `
 {
 	# 取得nunit project的路徑
-	$msTestPath =  Get-ChildItem $buildTempDirectory -Recurse -Filter Microsoft.VisualStudio.QualityTools.UnitTestFramework.dll | 
-						Select -ExpandProperty DirectoryName -Unique | 
-						% { [io.directoryinfo]$_ } 
+	$msTestPath = Get-DirectoryInfoContainFile "Microsoft.VisualStudio.QualityTools.UnitTestFramework.dll"
 
 	if(Test-Path $msTestPath){
 		Write-Host "建立MS Test測試結果的資料夾 $msTestResultDirectory"
