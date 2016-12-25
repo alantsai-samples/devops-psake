@@ -18,6 +18,11 @@
 
 	$nunitTestResultDirectory = "$buildTestResultDirectory\Nunit"
 
+	$msTestExe = ((Get-ChildItem("C:\Program Files (x86)\Microsoft Visual Studio*\Common7\IDE\CommonExtensions\Microsoft\TestWindow\vstest.console.exe")).FullName |
+                    Sort-Object $_ | select -Last 1)
+
+	$msTestResultDirectory= "$buildTestResultDirectory\MSTest"
+
 	$buildConfiguration = "Release"
 	$buildTarget = "Any CPU"
 }
@@ -109,6 +114,14 @@ task NunitTest -depends Compile -description "執行Nunit測試" `
 	Write-Host "執行的 Dll: $testDllsJoin"
 
 	exec{ & $nunitExe $testDllsJoin --result=$nunitTestResultDirectory\nUnit.xml}
+}
+
+task MSTest -depends Compile -description "執行MSTest測試" `
+{
+	# 取得nunit project的路徑
+	$msTestPath =  Get-ChildItem $buildTempDirectory -Recurse -Filter Microsoft.VisualStudio.QualityTools.UnitTestFramework.resources.dll | 
+						Select -ExpandProperty DirectoryName -Unique | 
+						% { [io.directoryinfo]$_ } 
 }
 
 
