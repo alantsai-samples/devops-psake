@@ -2,24 +2,24 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 using System.Web.Mvc;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using WebApplication1;
+using NUnit.Framework;
 using WebApplication1.Controllers;
 
-namespace WebApplication1.Tests.Controllers
+namespace WebApplication1.NunitTest.Controllers
 {
-    [TestClass]
+    [TestFixture]
     public class HomeControllerTest
     {
-        [TestMethod]
-        public void Index()
+        [Test]
+        public void About()
         {
             // Arrange
             HomeController controller = new HomeController();
 
             // Act
-            ViewResult result = controller.Index() as ViewResult;
+            ViewResult result = controller.About() as ViewResult;
 
             // Assert
             Assert.IsNotNull(result);

@@ -13,6 +13,11 @@
 	$xunitExe = ((Get-ChildItem("$solutionDirectory\packages\xunit.runner.console*")).FullName |
 					Sort-Object $_ | select -Last 1) + "\tools\xunit.console.exe"
 
+	$nunitExe = ((Get-ChildItem("$solutionDirectory\packages\NUnit.ConsoleRunner*")).FullName |
+                    Sort-Object $_ | select -Last 1) + "\tools\nunit3-console.exe"
+
+	$nunitTestResultDirectory = "$buildTestResultDirectory\Nunit"
+
 	$buildConfiguration = "Release"
 	$buildTarget = "Any CPU"
 }
@@ -79,7 +84,35 @@ task XunitTest -depends Compile -description "執行Xunit測試" `
 
 }
 
-task Test -depends Compile, Clean, XunitTest -description "執行Test" { 
+task NunitTest -depends Compile -description "執行Nunit測試" `
+{
+	# 取得nunit project的路徑
+	$nunitTestPath =  Get-ChildItem $buildTempDirectory -Recurse -Filter nunit*.dll | 
+						Select -ExpandProperty DirectoryName -Unique | % { [io.directoryinfo]$_ }
+
+	if(Test-Path $nunitTestPath){
+		Write-Host "建立Nunit測試結果的資料夾 $nunitTestResultDirectory"
+		New-Item $nunitTestResultDirectory -ItemType Directory | Out-Null
+
+		Write-Host "總共有 $($nunitTestPath.Count) 個專案"
+
+		Write-Host ($nunitTestPath | Select $_.Name)
+
+		Write-Host "準備執行Nunit測試"
+	}
+
+	# 組執行的dll
+	$testDlls = $nunitTestPath | % {$_.FullName + "\" + $_.Name + ".dll" }
+ 
+	$testDllsJoin = [string]::Join(" ", $testDlls)
+
+	Write-Host "執行的 Dll: $testDllsJoin"
+
+	exec{ & $nunitExe $testDllsJoin --result=$nunitTestResultDirectory\nUnit.xml}
+}
+
+
+task Test -depends Compile, Clean, XunitTest, NunitTest -description "執行Test" { 
 	Write-Host $testMsg
 }
 
