@@ -27,6 +27,9 @@ Properties{
 
 	$msTestResultDirectory= "$buildTestResultDirectory\MSTest"
 
+	$openCoverExe = (Get-PackagePath $packageDirectoryPath "OpenCover") +
+						"\tools\OpenCover.Console.exe"
+
 	$buildConfiguration = "Release"
 	$buildTarget = "Any CPU"
 }
