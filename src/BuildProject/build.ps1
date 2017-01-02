@@ -16,7 +16,7 @@ if(Test-Path $psakeModulePath){
 
 # 執行psake
 Invoke-psake -buildFile .\default.ps1 -taskList Test `
-			 -framework "4.5.2" `
+			 -framework "4.6" `
 			 -parameters @{
 				"solutionFile" = (Get-ChildItem("..\*.sln")).FullName |
 					Sort-Object $_ | select -Last 1

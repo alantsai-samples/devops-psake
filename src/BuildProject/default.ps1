@@ -27,6 +27,14 @@ Properties{
 
 	$msTestResultDirectory= "$buildTestResultDirectory\MSTest"
 
+	$openCoverExe = (Get-PackagePath $packageDirectoryPath "OpenCover") +
+						"\tools\OpenCover.Console.exe"
+
+	$openCoverResult = "$buildTestCoverageDirectory\openCover.xml"
+	$openCoverFilter = "+[*]* -[xunit.*]* -[*.NunitTest]* -[*.Tests]* -[*.XunitTest]*"
+	$openCoverExcludeAttribute = "System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverageAttribute"
+	$openCoverExcludeFie = "*\*Designer.cs;*\*.g.cs;*\*.g.i.cs"
+
 	$buildConfiguration = "Release"
 	$buildTarget = "Any CPU"
 }
@@ -66,9 +74,18 @@ task XunitTest -depends Compile -description "執行Xunit測試" `
 
 	if(Test-Path $testAssembly){
 
-		exec{ &$xunitExe $testAssembly -xml $xunitTestResultDirectory\xUnit.xml `
-				-html $xunitTestResultDirectory\xUnit.html `
-				-nologo -noshadow}
+		$xmlResult = "$xunitTestResultDirectory\xUnit.xml"
+		$htmlResult = "$xunitTestResultDirectory\xUnit.html"
+
+		$targetArg = "$testAssembly -xml $xmlResult -html $htmlResult -nologo -noshadow"
+
+		Run-TestWithOpenCover -testRunnerExe $xunitExe `
+							-testRunnerArg $targetArg `
+							-openCoverExe $openCoverExe `
+							-openCoverResult $openCoverResult `
+							-filter $openCoverFilter `
+							-excludeAttribute $openCoverExcludeAttribute `
+							-excludeFiles $openCoverExcludeFie `
 	}
 }
 
@@ -78,7 +95,15 @@ task NunitTest -depends Compile -description "執行Nunit測試" `
 	$testAssembly = Get-TestAssemblyPath "nunit*.dll" $nunitTestResultDirectory
 
 	if(Test-Path $testAssembly){
-		exec{ & $nunitExe $testAssembly --result=$nunitTestResultDirectory\nUnit.xml}
+		$targetArg = "$testAssembly --result=$nunitTestResultDirectory\nUnit.xml"
+
+		Run-TestWithOpenCover -testRunnerExe $nunitExe `
+							-testRunnerArg $targetArg `
+							-openCoverExe $openCoverExe `
+							-openCoverResult $openCoverResult `
+							-filter $openCoverFilter `
+							-excludeAttribute $openCoverExcludeAttribute `
+							-excludeFiles $openCoverExcludeFie `
 	}
 }
 
@@ -91,7 +116,16 @@ task MSTest -depends Compile -description "執行MSTest測試" `
 	if(Test-Path $testAssembly){
 		# MSTest 無法設定結果輸出位置，因此移動進去
 		Push-Location $msTestResultDirectory
-		exec {& $msTestExe $testAssembly /Logger:trx}
+		$targetArg = "$testAssembly /Logger:trx"
+
+		Run-TestWithOpenCover -testRunnerExe $msTestExe `
+							-testRunnerArg $targetArg `
+							-openCoverExe $openCoverExe `
+							-openCoverResult $openCoverResult `
+							-filter $openCoverFilter `
+							-excludeAttribute $openCoverExcludeAttribute `
+							-excludeFiles $openCoverExcludeFie `
+
 		Pop-Location
 
 		$msTestDefaultResultPath = "$msTestResultDirectory\TestResults"

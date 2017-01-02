@@ -25,7 +25,6 @@ function Get-TestAssemblyPath {
 	$testDllPath = ""
 
 	if(Test-Path $testPath) {
-
 			Write-Host "建立測試結果的資料夾 $testRestPath"
 			New-Item $testRestPath -ItemType Directory | Out-Null
 
@@ -45,4 +44,28 @@ function Get-TestAssemblyPath {
 		}
 
 		return $testDllPath
+}
+
+function Run-TestWithOpenCover {
+	[CmdletBinding()]
+	param([Parameter(Position=0,Mandatory=1)]$testRunnerExe,
+		 [Parameter(Position=1,Mandatory=1)]$testRunnerArg,
+		 [Parameter(Position=2,Mandatory=1)]$openCoverExe,
+		 [Parameter(Position=3,Mandatory=1)]$openCoverResult,
+		 [Parameter(Position=4,Mandatory=1)]$filter,
+		 [Parameter(Position=5,Mandatory=1)]$excludeAttribute,
+		 [Parameter(Position=6,Mandatory=1)]$excludeFiles)
+
+	Exec { &$openCoverExe "-target:$testRunnerExe" `
+						"-targetargs:$testRunnerArg" `
+						"-output:$openCoverResult" `
+						-register:user `
+						"-filter:$filter" `
+						-excludebyattribute:$excludeAttribute `
+						-excludebyfile:$excludeFiles `
+						-skipautoprops `
+						-mergebyhash `
+						-mergeoutput `
+						-hideskipped:All `
+						-returntargetcode}
 }
