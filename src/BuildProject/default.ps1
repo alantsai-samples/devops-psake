@@ -30,6 +30,8 @@ Properties{
 	$openCoverExe = (Get-PackagePath $packageDirectoryPath "OpenCover") +
 						"\tools\OpenCover.Console.exe"
 
+	$openCoverResult = "$buildTestCoverageDirectory\openCover.xml"
+
 	$buildConfiguration = "Release"
 	$buildTarget = "Any CPU"
 }
