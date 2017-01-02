@@ -31,6 +31,9 @@ Properties{
 						"\tools\OpenCover.Console.exe"
 
 	$openCoverResult = "$buildTestCoverageDirectory\openCover.xml"
+	$openCoverFilter = "+[*]* -[xunit.*]* -[*.NunitTest]* -[*.Tests]* -[*.XunitTest]*"
+	$openCoverExcludeAttribute = "System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverageAttribute"
+	$openCoverExcludeFie = "*\*Designer.cs;*\*.g.cs;*\*.g.i.cs"
 
 	$buildConfiguration = "Release"
 	$buildTarget = "Any CPU"
