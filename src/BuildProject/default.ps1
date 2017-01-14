@@ -164,6 +164,7 @@ task Compile -depends Clean, Init -description "編譯程式碼" `
 					";OutDir=$buildTempDirectory"
 	
 	$buildParam = $buildParam + ";GenerateProjectSpecificOutputFolder=true"
+	$buildParam = $buildParam + ";RunCodeAnalysis=true;CodeAnalysisRuleSet=MinimumRecommendedRules.ruleset;CodeAnalysisTreatWarningsAsErrors=true"
 
 	exec {msbuild $solutionFile "/p:$buildParam"}
 }
