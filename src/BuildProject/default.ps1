@@ -35,6 +35,10 @@ Properties{
 	$openCoverExcludeAttribute = "System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverageAttribute"
 	$openCoverExcludeFie = "*\*Designer.cs;*\*.g.cs;*\*.g.i.cs"
 
+
+	$reportGeneratorExe = (Get-PackagePath $packageDirectoryPath "ReportGenerator") +
+						"\tools\ReportGenerator.exe"
+
 	$buildConfiguration = "Release"
 	$buildTarget = "Any CPU"
 }
@@ -139,6 +143,14 @@ task MSTest -depends Compile -description "執行MSTest測試" `
 
 
 task Test -depends Compile, Clean, XunitTest, NunitTest, MSTest -description "執行Test" { 
+	
+	if(Test-Path $openCoverResult){
+		Write-Host "`r`n產生測試涵蓋率報告 html 格式"
+		exec{ &$reportGeneratorExe $openCoverResult $buildTestCoverageDirectory}
+	} else {
+		Write-Host "`r`n沒有產生測試涵蓋率報告"
+	}
+
 	Write-Host $testMsg
 }
 
