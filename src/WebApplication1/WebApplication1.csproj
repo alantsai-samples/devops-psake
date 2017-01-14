@@ -290,4 +290,7 @@
   </Target>
   <Target Name="AfterBuild">
   </Target> -->
+  <PropertyGroup>
+    <StyleCopEnabled>false</StyleCopEnabled>
+  </PropertyGroup>
 </Project>
