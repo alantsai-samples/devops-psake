@@ -41,6 +41,9 @@ Properties{
 
 	$buildConfiguration = "Release"
 	$buildTarget = "Any CPU"
+
+	$isRunCodeAnalysis = $true
+	$isRunStyleCop = $true
 }
 
 FormatTaskName ("`r`n`r`n" + ("-"*25) + "[{0}]" + ("-"*25))
@@ -164,8 +167,16 @@ task Compile -depends Clean, Init -description "編譯程式碼" `
 					";OutDir=$buildTempDirectory"
 	
 	$buildParam = $buildParam + ";GenerateProjectSpecificOutputFolder=true"
-	$buildParam = $buildParam + ";RunCodeAnalysis=true;CodeAnalysisRuleSet=MinimumRecommendedRules.ruleset;CodeAnalysisTreatWarningsAsErrors=true"
-	$buildParam = $buildParam + ";StyleCopEnabled=true;StyleCopTreatErrorsAsWarnings=false"
+
+	if($isRunCodeAnalysis){
+		Write-Host "執行Code Analysis"
+		$buildParam = $buildParam + ";RunCodeAnalysis=true;CodeAnalysisRuleSet=MinimumRecommendedRules.ruleset;CodeAnalysisTreatWarningsAsErrors=true"
+	}
+
+	if($isRunStyleCop){
+		Write-Host "執行StyleCop"
+		$buildParam = $buildParam + ";StyleCopEnabled=true;StyleCopTreatErrorsAsWarnings=false"
+	}
 
 	exec {msbuild $solutionFile "/p:$buildParam"}
 }

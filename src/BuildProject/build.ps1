@@ -23,6 +23,8 @@ Invoke-psake -buildFile .\default.ps1 -taskList Test `
 			 }`
 			 -properties @{
 				"testMsg"="測試訊息"
+				"isRunCodeAnalysis" = $false
+				"isRunStyleCop" = $false
 			 }
 
 Write-Host "建制的Exit Code：$LastExitCode"
