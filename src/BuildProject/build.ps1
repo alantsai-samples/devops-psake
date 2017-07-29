@@ -9,24 +9,28 @@ $solutionFile = (Get-ChildItem(Join-Path $sciptCurrentDir "..\*.sln")).FullName 
 					Sort-Object $_ | select -Last 1
 
 # 找到和 build一起的 psake module
-$psakeModulePath = (Get-ChildItem( Join-Path $sciptCurrentDir "..\packages\psake*\tools\psake.psm1")).FullName |
+$psakeModulePath = (Get-ChildItem( Join-Path $sciptCurrentDir ".\Tool\psake.psm1")).FullName |
 						Sort-Object $_ | select -Last 1
 
+function LoadPsakePackage {
 
-# 如果psake module有存在，先把他反註解
-if (Get-Module -ListAvailable -Name psake) {
-	Remove-Module psake
-} 
+	[CmdletBinding()]
+	param([Parameter(Position=0,Mandatory=1)]$psakeModulePath)
 
-# 找到psake module並且註冊
-$psakeModulePath = $psakeModulePath
+	# 如果psake module有存在，先把他反註解
+	if (Get-Module -ListAvailable -Name psake) {
+		Remove-Module psake
+	} 
 
-if(Test-Path $psakeModulePath){
-	Import-Module $psakeModulePath
-}else{
-	Write-Host "找不到psake module，請確認好nuget package有restore完成"
-	return
+	if(Test-Path $psakeModulePath){
+		Import-Module $psakeModulePath
+	}else{
+		Write-Host "找不到psake module，請確認好nuget package有restore完成"
+		return
+	}
 }
+
+LoadPsakePackage $psakeModulePath
 
 # 執行psake
 Invoke-psake -buildFile $buildFile -taskList Test `
