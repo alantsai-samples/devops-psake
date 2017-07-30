@@ -41,6 +41,9 @@ Properties{
 
 	$buildConfiguration = "Release"
 	$buildTarget = "Any CPU"
+
+	$isRunCodeAnalysis = $true
+	$isRunStyleCop = $true
 }
 
 FormatTaskName ("`r`n`r`n" + ("-"*25) + "[{0}]" + ("-"*25))
@@ -64,7 +67,11 @@ function InitDirectory{
 
 task default -depends Test
 
-task Init -depends Clean -description "初始化建制所需要的設定"{
+task NugetRestore -description "nuget restore" {
+	exec {& $nugetExePath restore $solutionFile}
+}
+
+task Init -depends NugetRestore -description "初始化建制所需要的設定"{
 	InitDirectory
 
 	# 檢查test framework runner
@@ -142,7 +149,7 @@ task MSTest -depends Compile -description "執行MSTest測試" `
 }
 
 
-task Test -depends Compile, Clean, XunitTest, NunitTest, MSTest -description "執行Test" { 
+task Test -depends XunitTest, NunitTest, MSTest -description "執行Test" { 
 	
 	if(Test-Path $openCoverResult){
 		Write-Host "`r`n產生測試涵蓋率報告 html 格式"
@@ -164,8 +171,16 @@ task Compile -depends Clean, Init -description "編譯程式碼" `
 					";OutDir=$buildTempDirectory"
 	
 	$buildParam = $buildParam + ";GenerateProjectSpecificOutputFolder=true"
-	$buildParam = $buildParam + ";RunCodeAnalysis=true;CodeAnalysisRuleSet=MinimumRecommendedRules.ruleset;CodeAnalysisTreatWarningsAsErrors=true"
-	$buildParam = $buildParam + ";StyleCopEnabled=true;StyleCopTreatErrorsAsWarnings=false"
+
+	if($isRunCodeAnalysis){
+		Write-Host "執行Code Analysis"
+		$buildParam = $buildParam + ";RunCodeAnalysis=true;CodeAnalysisRuleSet=MinimumRecommendedRules.ruleset;CodeAnalysisTreatWarningsAsErrors=true"
+	}
+
+	if($isRunStyleCop){
+		Write-Host "執行StyleCop"
+		$buildParam = $buildParam + ";StyleCopEnabled=true;StyleCopTreatErrorsAsWarnings=false"
+	}
 
 	exec {msbuild $solutionFile "/p:$buildParam"}
 }
