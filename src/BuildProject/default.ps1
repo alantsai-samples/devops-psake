@@ -14,21 +14,17 @@ Properties{
 	$packageDirectoryPath = "$solutionDirectory\packages\"
 
 	$xunitTestResultDirectory = "$buildTestResultDirectory\Xunit"
-	$xunitExe = (Get-PackagePath $packageDirectoryPath "xunit.runner.console") + 
-					"\tools\xunit.console.exe"
+	$script:xunitExe = ""
 
-	$nunitExe = (Get-PackagePath $packageDirectoryPath "NUnit.ConsoleRunner") + 
-                   "\tools\nunit3-console.exe"
+	$script:nunitExe = ""
 
 	$nunitTestResultDirectory = "$buildTestResultDirectory\Nunit"
 
-	$msTestExe = ((Get-ChildItem("C:\Program Files (x86)\Microsoft Visual Studio*\Common7\IDE\CommonExtensions\Microsoft\TestWindow\vstest.console.exe")).FullName |
-                    Sort-Object $_ | select -Last 1)
+	$script:msTestExe = ""
 
 	$msTestResultDirectory= "$buildTestResultDirectory\MSTest"
 
-	$openCoverExe = (Get-PackagePath $packageDirectoryPath "OpenCover") +
-						"\tools\OpenCover.Console.exe"
+	$script:openCoverExe = ""
 
 	$openCoverResult = "$buildTestCoverageDirectory\openCover.xml"
 	$openCoverFilter = "+[*]* -[xunit.*]* -[*.NunitTest]* -[*.Tests]* -[*.XunitTest]*"
@@ -36,14 +32,46 @@ Properties{
 	$openCoverExcludeFie = "*\*Designer.cs;*\*.g.cs;*\*.g.i.cs"
 
 
-	$reportGeneratorExe = (Get-PackagePath $packageDirectoryPath "ReportGenerator") +
-						"\tools\ReportGenerator.exe"
+	$script:reportGeneratorExe = ""
 
 	$buildConfiguration = "Release"
 	$buildTarget = "Any CPU"
+
+	$isRunCodeAnalysis = $true
+	$isRunStyleCop = $true
 }
 
 FormatTaskName ("`r`n`r`n" + ("-"*25) + "[{0}]" + ("-"*25))
+
+function InitExePath{
+	Write-Host a1
+
+	if([string]::IsNullOrEmpty($script:xunitExe)){
+		$script:xunitExe = (Get-PackagePath $packageDirectoryPath "xunit.runner.console") + 
+				"\tools\xunit.console.exe"
+	}
+	Write-Host b1
+
+	if([string]::IsNullOrEmpty($script:nunitExe)){
+		$script:nunitExe = (Get-PackagePath $packageDirectoryPath "NUnit.ConsoleRunner") + 
+					"\tools\nunit3-console.exe"
+	}
+
+	if([string]::IsNullOrEmpty($script:msTestExe)){
+		$script:msTestExe = ((Get-ChildItem("C:\Program Files (x86)\Microsoft Visual Studio*\Common7\IDE\CommonExtensions\Microsoft\TestWindow\vstest.console.exe")).FullName |
+			Sort-Object $_ | select -Last 1)
+	}
+
+	if([string]::IsNullOrEmpty($script:openCoverExe)){
+		$script:openCoverExe = (Get-PackagePath $packageDirectoryPath "OpenCover") +
+			"\tools\OpenCover.Console.exe"
+	}
+
+	if([string]::IsNullOrEmpty($script:reportGeneratorExe)){
+		$script:reportGeneratorExe = (Get-PackagePath $packageDirectoryPath "ReportGenerator") +
+			"\tools\ReportGenerator.exe"
+	}
+}
 
 function InitDirectory{
 	Write-Host "建立建制結果的資料夾 $buildDirectory"
@@ -64,11 +92,17 @@ function InitDirectory{
 
 task default -depends Test
 
-task Init -depends Clean -description "初始化建制所需要的設定"{
+task NugetRestore -description "nuget restore" {
+	exec {& $nugetExePath restore $solutionFile}
+}
+
+task Init -depends NugetRestore -description "初始化建制所需要的設定"{
+	InitExePath
+
 	InitDirectory
 
 	# 檢查test framework runner
-	Assert (Test-Path $xunitExe) "xunit console runner 找不到"
+	Assert (Test-Path $script:xunitExe) "xunit console runner 找不到"
 }
 
 task XunitTest -depends Compile -description "執行Xunit測試" `
@@ -83,9 +117,9 @@ task XunitTest -depends Compile -description "執行Xunit測試" `
 
 		$targetArg = "$testAssembly -xml $xmlResult -html $htmlResult -nologo -noshadow"
 
-		Run-TestWithOpenCover -testRunnerExe $xunitExe `
+		Run-TestWithOpenCover -testRunnerExe $script:xunitExe `
 							-testRunnerArg $targetArg `
-							-openCoverExe $openCoverExe `
+							-openCoverExe $script:openCoverExe `
 							-openCoverResult $openCoverResult `
 							-filter $openCoverFilter `
 							-excludeAttribute $openCoverExcludeAttribute `
@@ -101,9 +135,9 @@ task NunitTest -depends Compile -description "執行Nunit測試" `
 	if(Test-Path $testAssembly){
 		$targetArg = "$testAssembly --result=$nunitTestResultDirectory\nUnit.xml"
 
-		Run-TestWithOpenCover -testRunnerExe $nunitExe `
+		Run-TestWithOpenCover -testRunnerExe $script:nunitExe `
 							-testRunnerArg $targetArg `
-							-openCoverExe $openCoverExe `
+							-openCoverExe $script:openCoverExe `
 							-openCoverResult $openCoverResult `
 							-filter $openCoverFilter `
 							-excludeAttribute $openCoverExcludeAttribute `
@@ -122,9 +156,9 @@ task MSTest -depends Compile -description "執行MSTest測試" `
 		Push-Location $msTestResultDirectory
 		$targetArg = "$testAssembly /Logger:trx"
 
-		Run-TestWithOpenCover -testRunnerExe $msTestExe `
+		Run-TestWithOpenCover -testRunnerExe $script:msTestExe `
 							-testRunnerArg $targetArg `
-							-openCoverExe $openCoverExe `
+							-openCoverExe $script:openCoverExe `
 							-openCoverResult $openCoverResult `
 							-filter $openCoverFilter `
 							-excludeAttribute $openCoverExcludeAttribute `
@@ -142,11 +176,11 @@ task MSTest -depends Compile -description "執行MSTest測試" `
 }
 
 
-task Test -depends Compile, Clean, XunitTest, NunitTest, MSTest -description "執行Test" { 
+task Test -depends XunitTest, NunitTest, MSTest -description "執行Test" { 
 	
 	if(Test-Path $openCoverResult){
 		Write-Host "`r`n產生測試涵蓋率報告 html 格式"
-		exec{ &$reportGeneratorExe $openCoverResult $buildTestCoverageDirectory}
+		exec{ &$script:reportGeneratorExe $openCoverResult $buildTestCoverageDirectory}
 	} else {
 		Write-Host "`r`n沒有產生測試涵蓋率報告"
 	}
@@ -164,8 +198,16 @@ task Compile -depends Clean, Init -description "編譯程式碼" `
 					";OutDir=$buildTempDirectory"
 	
 	$buildParam = $buildParam + ";GenerateProjectSpecificOutputFolder=true"
-	$buildParam = $buildParam + ";RunCodeAnalysis=true;CodeAnalysisRuleSet=MinimumRecommendedRules.ruleset;CodeAnalysisTreatWarningsAsErrors=true"
-	$buildParam = $buildParam + ";StyleCopEnabled=true;StyleCopTreatErrorsAsWarnings=false"
+
+	if($isRunCodeAnalysis){
+		Write-Host "執行Code Analysis"
+		$buildParam = $buildParam + ";RunCodeAnalysis=true;CodeAnalysisRuleSet=MinimumRecommendedRules.ruleset;CodeAnalysisTreatWarningsAsErrors=true"
+	}
+
+	if($isRunStyleCop){
+		Write-Host "執行StyleCop"
+		$buildParam = $buildParam + ";StyleCopEnabled=true;StyleCopTreatErrorsAsWarnings=false"
+	}
 
 	exec {msbuild $solutionFile "/p:$buildParam"}
 }
