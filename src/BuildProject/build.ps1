@@ -12,6 +12,8 @@ $solutionFile = (Get-ChildItem(Join-Path $sciptCurrentDir "..\*.sln")).FullName 
 $psakeModulePath = (Get-ChildItem( Join-Path $sciptCurrentDir ".\Tool\psake.psm1")).FullName |
 						Sort-Object $_ | select -Last 1
 
+$nugetExePath = Join-Path $sciptCurrentDir .\Tool\nuget.exe				
+
 function LoadPsakePackage {
 
 	[CmdletBinding()]
@@ -37,6 +39,7 @@ Invoke-psake -buildFile $buildFile -taskList Test `
 			 -framework "4.6" `
 			 -parameters @{
 				"solutionFile" = $solutionFile
+				"nugetExePath" = $nugetExePath
 			 }`
 			 -properties @{
 				"testMsg"="測試訊息"
