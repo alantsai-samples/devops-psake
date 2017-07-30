@@ -72,6 +72,12 @@
     <None Include="helper.ps1" />
     <None Include="MSBuildTargets\ApplicationBuild.targets" />
     <None Include="packages.config" />
+    <None Include="Tool\psake.psd1" />
+    <None Include="Tool\psake.psm1" />
+  </ItemGroup>
+  <ItemGroup />
+  <ItemGroup>
+    <Content Include="Tool\nuget.exe" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

@@ -67,7 +67,11 @@ function InitDirectory{
 
 task default -depends Test
 
-task Init -depends Clean -description "初始化建制所需要的設定"{
+task NugetRestore -description "nuget restore" {
+	exec {& $nugetExePath restore $solutionFile}
+}
+
+task Init -depends NugetRestore -description "初始化建制所需要的設定"{
 	InitDirectory
 
 	# 檢查test framework runner
