@@ -145,7 +145,7 @@ task MSTest -depends Compile -description "執行MSTest測試" `
 }
 
 
-task Test -depends Compile, Clean, XunitTest, NunitTest, MSTest -description "執行Test" { 
+task Test -depends XunitTest, NunitTest, MSTest -description "執行Test" { 
 	
 	if(Test-Path $openCoverResult){
 		Write-Host "`r`n產生測試涵蓋率報告 html 格式"
