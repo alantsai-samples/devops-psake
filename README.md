@@ -1,5 +1,7 @@
 # devops-psake
 
+[![Build status](https://ci.appveyor.com/api/projects/status/kimfdfkum9q3w904/branch/master?svg=true)](https://ci.appveyor.com/project/alantsai/devops-psake/branch/master)
+
 This is a companion sample code of my devops series using psake (part of ithome ironman 8th series event) 
 
 這是 iThome第8屆鐵人賽 「從.Net工程師的角度來看DevOps - 到底能夠幫助什麼」的範例程式 
